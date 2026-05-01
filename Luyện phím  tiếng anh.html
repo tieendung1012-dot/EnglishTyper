@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Dictation - Pro Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            color: #00e676;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #8a8f98;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #161b22;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #30363d;
+        }
+
+        .custom-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .custom-input {
+            width: 100%;
+            height: 90px;
+            padding: 0.8rem;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 2px solid #21262d;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1rem;
+            outline: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .custom-input:focus {
+            border-color: #58a6ff;
+        }
+
+        .settings-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #21262d;
+        }
+
+        .settings-group label {
+            font-size: 0.95rem;
+            color: #8a8f98;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            flex: 1;
+        }
+
+        .settings-group select, .settings-group input {
+            padding: 0.4rem;
+            background: #161b22;
+            color: #fff;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #58a6ff;
+            font-weight: bold;
+        }
+
+        .text-display {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            padding: 1.2rem;
+            background-color: #0d1117;
+            border-radius: 8px;
+            border: 1px solid #21262d;
+            color: #c9d1d9;
+            height: 120px;
+            overflow-y: auto;
+            scroll-behavior: smooth; 
+        }
+
+        .translation-box {
+            font-size: 1.1rem;
+            color: #00e676;
+            background-color: #0d1117;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #00e676;
+            margin-bottom: 1.5rem;
+            min-height: 65px;
+            display: none;
+        }
+
+        .char-default {
+            color: #5c6470;
+        }
+
+        .char-correct {
+            color: #00e676;
+            font-weight: bold;
+        }
+
+        .char-current {
+            color: #ffffff;
+            background-color: #238636;
+            padding: 0 2px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .char-incorrect {
+            color: #ff3333;
+            text-decoration: underline;
+        }
+
+        .input-area {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            border: 2px solid #21262d;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .input-area:focus {
+            border-color: #00e676;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.9rem;
+            background-color: #238636;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2ea043;
+        }
+
+        .btn-info {
+            background-color: #1f2a3a;
+            color: #58a6ff;
+            border: 1px solid #30363d;
+        }
+
+        .btn-info:hover {
+            background-color: #263348;
+        }
+
+        .btn-warning {
+            background-color: #b38600;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d49c00;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Typing Dictation - Pro Edition</h1>
+        <p>Luyện tập tự do, di chuyển chữ theo con trỏ gõ và dịch nghĩa tự động</p>
+    </header>
+
+    <div class="container">
+        <div class="custom-section">
+            <textarea id="custom-text" class="custom-input" placeholder="Nhập văn bản bạn muốn luyện tập vào đây..."></textarea>
+            <button class="btn btn-info" onclick="loadCustomText()">Thiết lập văn bản</button>
+        </div>
+
+        <div class="settings-group">
+            <label>
+                Giọng đọc (Voice):
+                <select id="voice-select"></select>
+            </label>
+            <label>
+                Tốc độ đọc: <span id="speed-val">1.0</span>
+                <input type="range" id="speed-input" min="0.5" max="2.0" step="0.1" value="1.0">
+            </label>
+        </div>
+
+        <div class="stats">
+            <div>Trạng thái: <span id="timer" style="color: #00e676;">Sẵn sàng</span></div>
+            <div>Tốc độ: <span id="wpm">0</span> WPM</div>
+            <div>Độ chính xác: <span id="accuracy">100%</span></div>
+        </div>
+
+        <div id="text-display" class="text-display">Hãy nhập văn bản và nhấn "Thiết lập văn bản"...</div>
+        
+        <div id="translation-box" class="translation-box"></div>
+
+        <input type="text" id="input-area" class="input-area" placeholder="Bắt đầu gõ..." disabled autocomplete="off">
+
+        <div class="controls-group">
+            <button class="btn" id="start-btn" onclick="startTest()">Bắt đầu</button>
+            <button class="btn btn-info" onclick="toggleSpeech()">Tắt/Bật giọng đọc</button>
+        </div>
+        
+        <div class="controls-group">
+            <button class="btn btn-warning" onclick="startPlaybackReview()">▶ Đọc & Dịch tự động</button>
+        </div>
+    </div>
+
+    <script>
+        let originalTextArray = [];
+        let speechEnabled = true;
+        let isPlaying = false;
+        let voices = [];
+        let isReviewing = false;
+
+        const displayArea = document.getElementById('text-display');
+        const inputArea = document.getElementById('input-area');
+        const timerDisplay = document.getElementById('timer');
+        const wpmDisplay = document.getElementById('wpm');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const startBtn = document.getElementById('start-btn');
+        const translationBox = document.getElementById('translation-box');
+
+        function loadVoices() {
+            voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voice-select');
+            voiceSelect.innerHTML = '';
+            
+            voices.forEach((voice, i) => {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (voice.lang.includes('vi') || voice.lang.includes('en')) {
+                    voiceSelect.appendChild(option);
+                }
+            });
+        }
+        if (typeof speechSynthesis !== 'undefined') {
+            speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        function speakText(text) {
+            if (!speechEnabled || !text) return;
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voiceSelect = document.getElementById('voice-select');
+            const selectedIndex = voiceSelect.value;
+            if (voices[selectedIndex]) {
+                utterance.voice = voices[selectedIndex];
+            }
+            
+            utterance.rate = parseFloat(document.getElementById('speed-input').value);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleSpeech() {
+            speechEnabled = !speechEnabled;
+            alert(`Tính năng đọc chính tả đã ${speechEnabled ? 'BẬT' : 'TẮT'}`);
+        }
+
+        document.getElementById('speed-input').addEventListener('input', (e) => {
+            document.getElementById('speed-val').textContent = e.target.value;
+        });
+
+        function loadCustomText() {
+            const customText = document.getElementById('custom-text').value;
+            if (!customText.trim()) {
+                alert("Vui lòng nhập nội dung trước khi thiết lập!");
+                return;
+            }
+
+            originalTextArray = customText.split('');
+            displayArea.innerHTML = '';
+            
+            originalTextArray.forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.id = 'char-' + index;
+                span.className = 'char-default';
+                displayArea.appendChild(span);
+            });
+
+            translationBox.style.display = 'none';
+            alert("Đã tải văn bản thành công!");
+        }
+
+        function startTest() {
+            if (originalTextArray.length === 0) {
+                alert("Bạn chưa thiết lập văn bản. Hãy nhập văn bản và nhấn 'Thiết lập văn bản' trước!");
+                return;
+            }
+
+            isPlaying = true;
+            isReviewing = false;
+            inputArea.disabled = false;
+            inputArea.value = '';
+            inputArea.focus();
+            translationBox.style.display = 'none';
+            timerDisplay.textContent = "Đang luyện tập";
+
+            startBtn.textContent = 'Đang chạy...';
+            startBtn.style.backgroundColor = '#555';
+            startBtn.style.cursor = 'default';
+        }
+
+        async function translateToVietnamese(text) {
+            try {
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
+                const data = await response.json();
+                if (data && data[0] && data[0][0]) {
+                    return data[0][0][0];
+                }
+                return "Không thể lấy bản dịch.";
+            } catch (e) {
+                return "Không thể kết nối tới dịch vụ dịch thuật.";
+            }
+        }
+
+        inputArea.addEventListener('input', async (e) => {
+            if (!isPlaying || isReviewing) return;
+
+            const currentInputValue = inputArea.value;
+            const inputChars = currentInputValue.split('');
+            const spans = displayArea.querySelectorAll('span');
+
+            const lastChar = currentInputValue.slice(-1);
+
+            if (lastChar === ' ') {
+                const words = currentInputValue.trim().split(/\s+/);
+                const lastWord = words[words.length - 1];
+                if (lastWord.length > 0) {
+                    speakText(lastWord);
+                }
+            }
+
+            if (lastChar === '.') {
+                const sentences = currentInputValue.trim().match(/[^.!?]+[.!?]+/g) || [currentInputValue.trim()];
+                const currentSentence = sentences[sentences.length - 1].trim();
+
+                speakText(currentSentence);
+
+                const translated = await translateToVietnamese(currentSentence);
+                translationBox.innerHTML = `<strong>Bản dịch:</strong> ${translated}`;
+                translationBox.style.display = 'block';
+            }
+
+            spans.forEach((span, index) => {
+                if (index < inputChars.length) {
+                    if (inputChars[index] === span.textContent) {
+                        span.className = 'char-correct';
+                    } else {
+                        span.className = 'char-incorrect';
+                    }
+                } else if (index === inputChars.length) {
+                    span.className = 'char-current';
+                    span.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                } else {
+                    span.className = 'char-default';
+                }
+            });
+
+            wpmDisplay.textContent = currentInputValue.trim().split(/\s+/).filter(w => w.length > 0).length;
+            
+            const correctSpans = displayArea.querySelectorAll('.char-correct').length;
+            const accuracy = inputChars.length > 0 ? Math.round((correctSpans / inputChars.length) * 100) : 100;
+            accuracyDisplay.textContent = Math.min(accuracy, 100) + '%';
+
+            if (inputChars.length >= originalTextArray.length) {
+                endTest();
+            }
+        });
+
+        // Đọc lại toàn bộ văn bản và dịch
+        async function startPlaybackReview() {
+            const fullContent = document.getElementById('custom-text').value.trim();
+            if (!fullContent) {
+                alert("Vui lòng thiết lập văn bản trước khi xem lại!");
+                return;
+            }
+
+            // Tách các câu dựa trên dấu . ! ?
+            const sentences = fullContent.match(/[^.!?]+[.!?]+/g) || [fullContent];
+            isPlaying = false;
+            isReviewing = true;
+            timerDisplay.textContent = "Đang xem lại";
+
+            const spans = displayArea.querySelectorAll('span');
+            // Reset tất cả về mặc định trước khi bắt đầu
+            spans.forEach(s => s.className = 'char-default');
+
+            let charOffset = 0;
+
+            for (let i = 0; i < sentences.length; i++) {
+                if (!isReviewing) break; 
+                
+                const sentence = sentences[i].trim();
+                const translated = await translateToVietnamese(sentence);
+
+                // Hiển thị bản dịch
+                translationBox.innerHTML = `<strong>Bản dịch:</strong> ${translated}`;
+                translationBox.style.display = 'block';
+
+                // Bôi sáng từng ký tự trong câu đang đọc
+                for (let j = 0; j < sentence.length; j++) {
+                    const currentIdx = charOffset + j;
+                    if (spans[currentIdx]) {
+                        spans[currentIdx].className = 'char-current';
+                        spans[currentIdx].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 50)); // Tốc độ bôi sáng
+                }
+
+                speakText(sentence);
+                
+                // Chờ đọc xong câu (tính toán thời gian ước chừng) hoặc ít nhất 3.5 giây cho mỗi câu
+                await new Promise(resolve => setTimeout(resolve, Math.max(3500, sentence.length * 80)));
+                
+                // Đổi màu câu vừa đọc sang correct để phân biệt đã qua
+                for (let j = 0; j < sentence.length; j++) {
+                    const currentIdx = charOffset + j;
+                    if (spans[currentIdx]) {
+                        spans[currentIdx].className = 'char-correct';
+                    }
+                }
+                charOffset += sentence.length + (fullContent[charOffset + sentence.length] === ' ' ? 1 : 0);
+            }
+
+            timerDisplay.textContent = "Hoàn thành xem lại";
+            isReviewing = false;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Control' && isPlaying) {
+                const currentInputValue = inputArea.value.trim();
+                if (currentInputValue.length > 0) {
+                    speakText(currentInputValue);
+                }
+            }
+        });
+
+        function endTest() {
+            isPlaying = false;
+            isReviewing = false;
+            inputArea.disabled = true;
+            startBtn.textContent = 'Làm lại';
+            startBtn.style.backgroundColor = '#238636';
+            startBtn.style.cursor = 'pointer';
+            timerDisplay.textContent = "Hoàn thành";
+        }
+    </script>
+</body>
+</html>
